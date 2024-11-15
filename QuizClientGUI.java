@@ -8,6 +8,10 @@ import java.net.*;
  * Allows the user to answer quiz questions and receive feedback.
  */
 public class QuizClientGUI {
+    private static final String CONFIG_FILE = "src/server_info.dat"; // Configuration file for server info
+    private static String serverIp = "localhost"; // Default server IP
+    private static int serverPort = 1234; // Default server port
+
     private JFrame frame; // Main application window
     private JTextArea questionArea; // Area to display the question
     private JRadioButton optionA, optionB, optionC, optionD; // Radio buttons for answer options
@@ -22,6 +26,7 @@ public class QuizClientGUI {
      */
     public QuizClientGUI() {
         initializeGUI();
+        readServerConfig(); // Load server IP and port from the configuration file
         connectToServer();
     }
 
@@ -81,11 +86,24 @@ public class QuizClientGUI {
     }
 
     /**
+     * Reads the server IP and port from a configuration file.
+     * If the file is not found or is invalid, default values are used.
+     */
+    private void readServerConfig() {
+        try (BufferedReader configReader = new BufferedReader(new FileReader(CONFIG_FILE))) {
+            serverIp = configReader.readLine(); // Read server IP from the first line
+            serverPort = Integer.parseInt(configReader.readLine()); // Read server port from the second line
+        } catch (IOException | NumberFormatException e) {
+            JOptionPane.showMessageDialog(frame, "Configuration file not found or invalid. Using default values.");
+        }
+    }
+
+    /**
      * Connects to the Quiz Server and starts a background thread to handle server messages.
      */
     private void connectToServer() {
         try {
-            socket = new Socket("localhost", 1234); // Connect to the server on localhost and port 1234
+            socket = new Socket(serverIp, serverPort); // Connect to the server using loaded IP and port
             out = new PrintWriter(socket.getOutputStream(), true); // Create output stream to send messages
             in = new BufferedReader(new InputStreamReader(socket.getInputStream())); // Create input stream to receive messages
 
